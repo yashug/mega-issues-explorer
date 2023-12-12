@@ -43,7 +43,7 @@ export default function Home() {
     }
   }, [fetchedTickets, isPending]);
 
-  if (status === "pending") {
+  if (status === "pending" || !dataReady) {
     return <TicketListSkeleton />;
   }
 
