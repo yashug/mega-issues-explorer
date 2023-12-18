@@ -22,7 +22,7 @@ export type Ticket = {
   teamId: TeamId;
   id: string; // Format: `${teamID}-###` (e.g., "HFE-001")
   title: string;
-  parentId: string | null;
+  parentID: string | null;
   status: Status;
   priority: Priority;
   labels: Label[];

@@ -17,7 +17,6 @@ self.onmessage = async (e) => {
   // update offset based on existing synced count
   const syncInfo = await db.sync.get("syncInfo");
   if (syncInfo) {
-    console.log("from syncInfo", syncInfo);
     offset = syncInfo.syncedCount;
   }
 

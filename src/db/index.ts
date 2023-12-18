@@ -13,7 +13,7 @@ export class MyDB extends Dexie {
 
   constructor() {
     super("TicketsDB");
-    this.version(1).stores({
+    this.version(2).stores({
       tickets: "&id, status, priority, assignee, *labels",
       sync: "name",
     });
