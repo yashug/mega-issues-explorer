@@ -33,4 +33,12 @@ export type TicketList = {
   tickets: Ticket[];
 };
 
+export type GroupedTicket =
+  | {
+      type: "header";
+      groupHeader: string;
+      count: number;
+    }
+  | { type: "issue"; issue: Ticket };
+
 export type OrderBy = "id" | "status" | "priority" | "assignee" | "labels";

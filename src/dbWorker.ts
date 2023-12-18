@@ -3,40 +3,37 @@
  * It receives an array of tickets as input and inserts them in batches using transactions.
  * After each batch is inserted, it sends a message to update the UI.
  */
+import { db } from "./db";
 
-import { db } from "@/db";
-
-const BATCH_SIZE = 1000;
+const BATCH_SIZE = 10000;
 
 self.onmessage = async (e) => {
   const allTickets = e.data.flat();
   const totalRecords = allTickets.length;
 
-  let currentIndex = 0;
+  // use dexie to insert tickets in batches
+  let offset = 0;
 
-  function insertNextBatch() {
-    const endIndex = Math.min(currentIndex + BATCH_SIZE, totalRecords);
-    const currentBatch = allTickets.slice(currentIndex, endIndex);
-
-    if (currentBatch.length > 0) {
-      db.transaction('rw', db.tickets, async () => {
-        try {
-          await db.tickets.bulkAdd(currentBatch); // Insert current batch into IndexedDB
-        } catch (error) {
-          // console.error('Error inserting batch:', error);
-        }
-        currentIndex += BATCH_SIZE;
-
-        self.postMessage('update UI');
-
-        if (currentIndex < totalRecords) {
-          setTimeout(insertNextBatch, 0);
-        }
-      }).catch(error => {
-        console.error('Error inserting batch:', error);
-      });
-    }
+  // update offset based on existing synced count
+  const syncInfo = await db.sync.get("syncInfo");
+  if (syncInfo) {
+    console.log("from syncInfo", syncInfo);
+    offset = syncInfo.syncedCount;
   }
 
-  insertNextBatch();
+  while (offset < totalRecords) {
+    const batch = allTickets.slice(offset, offset + BATCH_SIZE);
+    try {
+      await db.tickets.bulkAdd(batch);
+    } catch (err) {
+      // console.log(err);
+    }
+    await db.sync.put({
+      name: "syncInfo",
+      totalCount: totalRecords,
+      syncedCount: offset + BATCH_SIZE,
+      synced: offset + BATCH_SIZE >= totalRecords,
+    });
+    offset += BATCH_SIZE;
+  }
 };

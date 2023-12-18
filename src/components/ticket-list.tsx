@@ -1,12 +1,13 @@
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useInView } from "react-intersection-observer";
-import type { Ticket } from "@/types";
+import type { OrderBy, Ticket, GroupedTicket } from "@/types";
 import TicketItem from "./ticket-item";
 import TicketListSkeleton from "./ticket-list-skeleton";
+import TicketListGroup from "./ticket-list-group";
 
 type TicketListProps = {
-  tickets: Ticket[];
+  tickets: GroupedTicket[];
   hasNextPage: boolean;
   hasPreviousPage: boolean;
   isFetchingNextPage: boolean;
@@ -71,7 +72,7 @@ export default function TicketList({
           const isNextLoaderRow =
             virtualRow.index === tickets.length && hasNextPage;
           const isPreviousLoaderRow = virtualRow.index === 0 && hasPreviousPage;
-          const ticket = tickets[virtualRow.index - (hasPreviousPage ? 1 : 0)];
+          const data = tickets[virtualRow.index - (hasPreviousPage ? 1 : 0)];
 
           return (
             <div
@@ -97,9 +98,16 @@ export default function TicketList({
                 </div>
               )}
 
-              {!isNextLoaderRow && !isPreviousLoaderRow && ticket && (
-                <TicketItem ticket={ticket} />
-              )}
+              {!isNextLoaderRow &&
+                !isPreviousLoaderRow &&
+                (data.type === "header" ? (
+                  <TicketListGroup
+                    title={data.groupHeader}
+                    count={data.count}
+                  />
+                ) : (
+                  <TicketItem ticket={data.issue} />
+                ))}
             </div>
           );
         })}
